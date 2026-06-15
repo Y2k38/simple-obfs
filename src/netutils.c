@@ -123,7 +123,7 @@ get_sockaddr(char *host, char *port,
              int ipv6first)
 {
     struct cork_ip ip;
-    if (cork_ip_init(&ip, host) != -1) {
+    if (cork_ip_init(&ip, host) != -1) { // 本身就是合法的IP地址
         if (ip.version == 4) {
             struct sockaddr_in *addr = (struct sockaddr_in *)storage;
             addr->sin_family = AF_INET;
@@ -140,7 +140,7 @@ get_sockaddr(char *host, char *port,
             }
         }
         return 0;
-    } else {
+    } else { // 域名
         struct addrinfo hints;
         struct addrinfo *result, *rp;
 
@@ -150,6 +150,7 @@ get_sockaddr(char *host, char *port,
 
         int err, i;
 
+        // 最多尝试8次
         for (i = 1; i < 8; i++) {
             err = getaddrinfo(host, port, &hints, &result);
 #if defined(MODULE_LOCAL)
@@ -274,12 +275,15 @@ sockaddr_cmp_addr(struct sockaddr_storage *addr1,
 int
 validate_hostname(const char *hostname, const int hostname_len)
 {
+    // 不能为 NULL：防止空指针崩溃。
     if (hostname == NULL)
         return 0;
 
+    // 总长度限制：根据 RFC 规范，整个域名的总长度（包含点）不能超过 255 个字符。
     if (hostname_len < 1 || hostname_len > 255)
         return 0;
 
+    // 开头不能是点：比如 .baidu.com 是非法的。
     if (hostname[0] == '.')
         return 0;
 
@@ -293,12 +297,15 @@ validate_hostname(const char *hostname, const int hostname_len)
         if (label + label_len > hostname + hostname_len)
             return 0;
 
+        // 根据 RFC 规范，域名中的每一段（Label）的长度不能超过 63 个字符，且不能为空。
         if (label_len > 63 || label_len < 1)
             return 0;
 
+        // 根据规范，减号 - 不能作为某一段的开头或结尾。
         if (label[0] == '-' || label[label_len - 1] == '-')
             return 0;
 
+        // strspn 是 C 语言标准库函数。它的意思是：检查 label 里的字符，是不是全部属于 valid_label_bytes（合法字符集，通常定义为 a-z, A-Z, 0-9 和 -）。
         if (strspn(label, valid_label_bytes) < label_len)
             return 0;
 

@@ -59,13 +59,19 @@ balloc(buffer_t *ptr, size_t capacity)
 int
 brealloc(buffer_t *ptr, size_t len, size_t capacity)
 {
+    // 没有传缓冲区地址
     if (ptr == NULL)
         return -1;
+    // 看是len长还是cap长
     size_t real_capacity = max(len, capacity);
+    // 容量不足
     if (ptr->capacity < real_capacity) {
+        // 扩容
         ptr->data    = ss_realloc(ptr->data, real_capacity);
+        // 更新容量
         ptr->capacity = real_capacity;
     }
+    // 以传入的len或cap为准
     return real_capacity;
 }
 

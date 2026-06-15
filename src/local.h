@@ -37,60 +37,60 @@
 
 typedef struct listen_ctx {
     ev_io io;
-    char *iface;
-    int remote_num;
-    int method;
-    int timeout;
-    int fd;
-    int mptcp;
-    struct sockaddr **remote_addr;
+    char *iface; // 网卡
+    int remote_num; // remote数量
+    int method; // method
+    int timeout; // 超时
+    int fd; // conn
+    int mptcp; // mptcp
+    struct sockaddr **remote_addr; // remote_addr
 } listen_ctx_t;
 
 typedef struct server_ctx {
     ev_io io;
-    int connected;
-    struct server *server;
+    int connected; // 是否已连接
+    struct server *server; // 双向绑定
 } server_ctx_t;
 
 typedef struct server {
-    int fd;
-    int stage;
+    int fd; // conn
+    int stage; // 阶段
 
-    obfs_t *obfs;
+    obfs_t *obfs; // 状态
 
-    struct server_ctx *recv_ctx;
-    struct server_ctx *send_ctx;
-    struct listen_ctx *listener;
-    struct remote *remote;
+    struct server_ctx *recv_ctx; // 接收上下文 - 是否已连接
+    struct server_ctx *send_ctx; // 发送上下文 - 是否已连接
+    struct listen_ctx *listener; // 
+    struct remote *remote; // remote
 
-    buffer_t *buf;
+    buffer_t *buf; // 缓冲区
 
-    struct cork_dllist_item entries;
+    struct cork_dllist_item entries; // 钩子
 } server_t;
 
 typedef struct remote_ctx {
     ev_io io;
-    ev_timer watcher;
+    ev_timer watcher; // 超时定时器
 
-    int connected;
-    struct remote *remote;
+    int connected; // 是否已连接
+    struct remote *remote; // 双向绑定
 } remote_ctx_t;
 
 typedef struct remote {
-    int fd;
-    int direct;
-    int addr_len;
-    uint32_t counter;
+    int fd; // conn
+    int direct; // 默认为0
+    int addr_len; // 长度
+    uint32_t counter; // 计数器
 #ifdef TCP_FASTOPEN_WINSOCK
-    OVERLAPPED olap;
-    int connect_ex_done;
+    OVERLAPPED olap; // 
+    int connect_ex_done; // 
 #endif
 
-    buffer_t *buf;
-    struct remote_ctx *recv_ctx;
-    struct remote_ctx *send_ctx;
-    struct server *server;
-    struct sockaddr_storage addr;
+    buffer_t *buf; // 缓冲区
+    struct remote_ctx *recv_ctx; // 接收上下文 - 是否已连接/超时
+    struct remote_ctx *send_ctx; // 发送上下文 - 是否已连接/超时
+    struct server *server; // 双向绑定
+    struct sockaddr_storage addr; // 地址
 } remote_t;
 
 #endif // _LOCAL_H

@@ -130,10 +130,10 @@ struct tls_encrypted_handshake {
 } __attribute__((packed, aligned(1)));
 
 typedef struct frame {
-    short idx;
-    short len;
-    char  buf[2];
-} frame_t;
+    short idx;      // 索引
+    short len;      // 长度
+    char  buf[2];   // 缓冲区，用于存储消息体的长度，用于覆盖len
+} frame_t;          // 一共6个字节
 
 extern obfs_para_t *obfs_tls;
 

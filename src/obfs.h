@@ -26,30 +26,32 @@
 #include <stdbool.h>
 #include "encrypt.h"
 
-#define OBFS_OK         0
-#define OBFS_NEED_MORE -1
-#define OBFS_ERROR     -2
+#define OBFS_OK         0 // 成功
+#define OBFS_NEED_MORE -1 // 数据不足
+#define OBFS_ERROR     -2 // 异常
 
+// 状态机，每个连接一个
 typedef struct obfs {
-    int obfs_stage;
-    int deobfs_stage;
-    buffer_t *buf;
-    void *extra;
+    int obfs_stage;   // 混淆阶段
+    int deobfs_stage; // 解混淆阶段
+    buffer_t *buf;    // 缓冲区，注意，tls会直接操作缓冲区
+    void *extra;      // 额外数据，tls模式使用
 } obfs_t;
 
+// 混淆器，全局唯一
 typedef struct obfs_para {
-    const char *name;
-    const char *host;
-    const char *uri;
-    const char *method;
-    uint16_t port;
-    bool send_empty_response_upon_connection;
+    const char *name;   // http或者tls
+    const char *host;   // 默认为"cloudfront.net"
+    const char *uri;    // local端使用，默认为 "/"
+    const char *method; // method，默认为GET
+    uint16_t port;      // local端使用，http为80，tls为443
+    bool send_empty_response_upon_connection; // server端使用，http为false，tls为true
 
     int(*const obfs_request)(buffer_t *, size_t, obfs_t *);
     int(*const obfs_response)(buffer_t *, size_t, obfs_t *);
     int(*const deobfs_request)(buffer_t *, size_t, obfs_t *);
     int(*const deobfs_response)(buffer_t *, size_t, obfs_t *);
-    int(*const check_obfs)(buffer_t *);
+    int(*const check_obfs)(buffer_t *); // server端调用
     void(*const disable)(obfs_t *);
     int(*const is_enable)(obfs_t *);
 } obfs_para_t;
