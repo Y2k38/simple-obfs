@@ -65,7 +65,7 @@ void
 parse_addr(const char *str, ss_addr_t *addr)
 {
     int ipv6 = 0, ret = -1, n = 0;
-    char *pch;
+    const char *pch;
 
     struct cork_ip ip;
     if (cork_ip_init(&ip, str) != -1) {
