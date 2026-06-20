@@ -51,6 +51,7 @@ protect_socket(int fd)
     int sock;
     struct sockaddr_un addr;
 
+    // 创建 Unix 域套接字句柄
     if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
         LOGE("[android] socket() failed: %s (socket fd = %d)\n", strerror(errno), sock);
         return -1;
@@ -60,13 +61,14 @@ protect_socket(int fd)
     struct timeval tv;
     tv.tv_sec  = 1;
     tv.tv_usec = 0;
+    // 设置双向超时防御（防止死锁）
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
     setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval));
 
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, "protect_path", sizeof(addr.sun_path) - 1);
-
+    // 瞄准并连接到本地“传送门路径”
     if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         LOGE("[android] connect() failed for protect_path: %s (socket fd = %d)\n",
              strerror(errno), sock);
@@ -74,6 +76,7 @@ protect_socket(int fd)
         return -1;
     }
 
+    // 跨进程发射 FD
     if (ancil_send_fd(sock, fd)) {
         ERROR("[android] ancil_send_fd");
         close(sock);
@@ -81,7 +84,7 @@ protect_socket(int fd)
     }
 
     char ret = 0;
-
+    // 等待回执与资源回收
     if (recv(sock, &ret, 1, 0) == -1) {
         ERROR("[android] recv");
         close(sock);

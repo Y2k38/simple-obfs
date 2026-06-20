@@ -1363,6 +1363,7 @@ main(int argc, char **argv)
     // 最多10个地址
     const char *server_host[MAX_REMOTE_NUM];
 
+    // 这东西压根就没用到，死代码
     char *nameservers = NULL;
 
     // 目标
